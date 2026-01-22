@@ -55,6 +55,8 @@ def main():
         label = clean_label(label_raw)
 
         if not label or not node_id:
+            if r < 10 or (r % 500 == 0):  # print first few rows and every 500th
+                print(f"SKIPPED row={r} lvl={lvl} node_id={node_id} label={label}")
             continue
 
         # Find parent: the most recent node at the highest level less than current
