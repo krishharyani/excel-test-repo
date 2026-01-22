@@ -42,8 +42,11 @@ def main():
     wb = load_workbook(XLSX_PATH, data_only=True)
     ws = wb[SHEET_NAME]
 
-    # Print a few rows so you confirm columns and levels
-    for r in range(50, 80):
+    # Stack tracks the current parent at each level: stack[level] = node_id
+    stack = {}
+    children = {}  # parent_node_id -> [child_node_ids]
+
+    for r in range(2, ws.max_row + 1):  # start from row 2 if row 1 is header
         label_raw = ws[f"{LABEL_COL}{r}"].value
         node_id = ws[f"{NODEID_COL}{r}"].value
         val = ws[f"{VALUE_COL}{r}"].value
@@ -51,8 +54,27 @@ def main():
         lvl = nbsp_level(label_raw)
         label = clean_label(label_raw)
 
-        if label:
-            print(r, "lvl=", lvl, "node=", node_id, "label=", label, "val=", val)
+        if not label or not node_id:
+            continue
+
+        # Find parent: the most recent node at level - 1
+        parent_id = stack.get(lvl - 1) if lvl > 0 else None
+
+        if parent_id:
+            children.setdefault(parent_id, []).append(node_id)
+
+        # Update stack: this node is now the current node at this level
+        stack[lvl] = node_id
+        # Clear deeper levels (they're no longer valid parents)
+        for deeper in list(stack.keys()):
+            if deeper > lvl:
+                del stack[deeper]
+
+        print(f"row={r} lvl={lvl} node={node_id} parent={parent_id} label={label}")
+
+    print("\n--- Parent -> Children ---")
+    for parent, kids in children.items():
+        print(f"{parent}: {kids}")
 
 if __name__ == "__main__":
     main()
