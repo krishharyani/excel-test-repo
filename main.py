@@ -57,8 +57,12 @@ def main():
         if not label or not node_id:
             continue
 
-        # Find parent: the most recent node at level - 1
-        parent_id = stack.get(lvl - 1) if lvl > 0 else None
+        # Find parent: the most recent node at the highest level less than current
+        parent_id = None
+        if lvl > 0:
+            parent_lvl = max((l for l in stack.keys() if l < lvl), default=None)
+            if parent_lvl is not None:
+                parent_id = stack[parent_lvl]
 
         if parent_id:
             children.setdefault(parent_id, []).append(node_id)
