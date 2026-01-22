@@ -67,7 +67,8 @@ def main():
                 parent_id = stack[parent_lvl]
 
         if parent_id:
-            children.setdefault(parent_id, []).append(node_id)
+            if node_id not in children.setdefault(parent_id, []):
+                children[parent_id].append(node_id)
 
         # Update stack: this node is now the current node at this level
         stack[lvl] = node_id
